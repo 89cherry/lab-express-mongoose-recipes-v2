@@ -1,7 +1,10 @@
 const express = require("express");
 const logger = require("morgan");
 
+
 const app = express();
+
+const Recipe = require('./models/Recipe.model')
 
 // MIDDLEWARE
 app.use(logger("dev"));
@@ -9,8 +12,11 @@ app.use(express.static("public"));
 app.use(express.json());
 
 
+
 // Iteration 1 - Connect to MongoDB
 // DATABASE CONNECTION
+
+require('./db/database-connection')
 
 
 
@@ -24,21 +30,67 @@ app.get('/', (req, res) => {
 //  Iteration 3 - Create a Recipe route
 //  POST  /recipes route
 
+app.post('/recipes', (req, res) => {
+    const { title, instructions, level, ingredients, image, duration, isArchived, timestamps } = req.body
+
+    Recipe
+        .create({ title, instructions, level, ingredients, image, duration, isArchived, timestamps })
+        .then(newRecipe => res.sendStatus(201))
+        .catch(err => res.json({ code: 500, errorDetails: err }))
+})
+
 
 //  Iteration 4 - Get All Recipes
 //  GET  /recipes route
+
+app.get('/recipes', (req, res) => {
+    Recipe
+        .find()
+        .then(allRecipes => res.json(allRecipes))
+        .catch(err => res.json({ code: 500, errorDetails: err }))
+})
 
 
 //  Iteration 5 - Get a Single Recipe
 //  GET  /recipes/:id route
 
+app.get('/recipes/:_id', (req, res) => {
+
+    const { _id } = req.params
+
+    Recipe
+        .findById(_id)
+        .then(recipe => res.json(recipe))
+        .catch(err => res.json({ code: 500, errorDetails: err }))
+})
+
 
 //  Iteration 6 - Update a Single Recipe
 //  PUT  /recipes/:id route
 
+app.put('/recipes/:_id', (req, res) => {
+    const { title, instructions, level, ingredients, image, duration, isArchived, timestamps } = req.body
+
+    const { _id } = req.params
+
+    Recipe
+        .findByIdAndUpdate(_id, { title, instructions, level, ingredients, image, duration, isArchived, timestamps })
+        .then(newRecipe => res.sendStatus(201))
+        .catch(err => res.json({ code: 500, errorDetails: err }))
+})
+
 
 //  Iteration 7 - Delete a Single Recipe
 //  DELETE  /recipes/:id route
+
+app.delete('/recipes/:_id', (req, res) => {
+    const { _id } = req.params
+
+    Recipe
+        .findOneAndDelete(_id)
+        .then(() => res.sendStatus(204))
+        .catch(err => res.json({ code: 500, errorDetails: err }))
+})
 
 
 
